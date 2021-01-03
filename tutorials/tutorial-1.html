@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Tutorial 1: Accounts, Arguments, and Types | Anchor</title>
     <meta name="generator" content="VuePress 1.7.1">
-    
     <meta name="description" content="">
     <meta name="theme-color" content="#3eaf7c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    
     <link rel="preload" href="/anchor/assets/css/0.styles.0a982d8b.css" as="style"><link rel="preload" href="/anchor/assets/js/app.7f71c2ae.js" as="script"><link rel="preload" href="/anchor/assets/js/2.8c48d9d7.js" as="script"><link rel="preload" href="/anchor/assets/js/14.f112a74d.js" as="script"><link rel="prefetch" href="/anchor/assets/js/10.e1137ec7.js"><link rel="prefetch" href="/anchor/assets/js/11.fc1d0af3.js"><link rel="prefetch" href="/anchor/assets/js/12.3607fad7.js"><link rel="prefetch" href="/anchor/assets/js/13.941123ca.js"><link rel="prefetch" href="/anchor/assets/js/3.5d8d4485.js"><link rel="prefetch" href="/anchor/assets/js/4.bf905f50.js"><link rel="prefetch" href="/anchor/assets/js/5.c82fd70a.js"><link rel="prefetch" href="/anchor/assets/js/6.ffe6f60a.js"><link rel="prefetch" href="/anchor/assets/js/7.a00e933e.js"><link rel="prefetch" href="/anchor/assets/js/8.ce70a05d.js"><link rel="prefetch" href="/anchor/assets/js/9.2250d602.js">
     <link rel="stylesheet" href="/anchor/assets/css/0.styles.0a982d8b.css">
   </head>
@@ -21,26 +19,21 @@
   GitHub
   <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <!----></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading"><span>Getting Started</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/anchor/getting-started/introduction.html" class="sidebar-link">Introduction</a></li><li><a href="/anchor/getting-started/installation.html" class="sidebar-link">Install</a></li></ul></section></li><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span>Tutorials</span> <!----></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/anchor/tutorials/tutorial-0.html" class="sidebar-link">Tutorial 0: A Minimal Example</a></li><li><a href="/anchor/tutorials/tutorial-1.html" aria-current="page" class="active sidebar-link">Tutorial 1: Accounts, Arguments, and Types</a><ul class="sidebar-sub-headers"><li class="sidebar-sub-header"><a href="/anchor/tutorials/tutorial-1.html#defining-a-program" class="sidebar-link">Defining a program</a></li></ul></li></ul></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="tutorial-1-accounts-arguments-and-types"><a href="#tutorial-1-accounts-arguments-and-types" class="header-anchor">#</a> Tutorial 1: Accounts, Arguments, and Types</h1> <p>It's recommended to read <a href="/anchor/tutorials/tutorial-0.html">Tutorial 0</a> first, as this tutorial will
 build on top of it. The full example can be found <a href="https://github.com/project-serum/anchor/tree/master/examples/basic-1" target="_blank" rel="noopener noreferrer">here<span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a>.</p> <h2 id="defining-a-program"><a href="#defining-a-program" class="header-anchor">#</a> Defining a program</h2> <p>We define our program as follows</p> <div class="language-rs extra-class"><pre class="language-rs"><code><span class="token attribute attr-name">#![feature(proc_macro_hygiene)]</span>
-
 <span class="token keyword">use</span> <span class="token namespace">anchor<span class="token punctuation">::</span>prelude<span class="token punctuation">::</span></span><span class="token operator">*</span><span class="token punctuation">;</span>
-
 <span class="token attribute attr-name">#[program]</span>
 <span class="token keyword">mod</span> <span class="token module-declaration namespace">basic</span> <span class="token punctuation">{</span>
     <span class="token keyword">use</span> <span class="token keyword">super</span><span class="token punctuation">::</span><span class="token operator">*</span><span class="token punctuation">;</span>
-
     <span class="token keyword">pub</span> <span class="token keyword">fn</span> <span class="token function-definition function">initialize</span><span class="token punctuation">(</span>ctx<span class="token punctuation">:</span> <span class="token class-name">Context</span><span class="token operator">&lt;</span><span class="token class-name">Initialize</span><span class="token operator">&gt;</span><span class="token punctuation">,</span> data<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">)</span> <span class="token punctuation">-&gt;</span> <span class="token class-name">ProgramResult</span> <span class="token punctuation">{</span>
         <span class="token keyword">let</span> my_account <span class="token operator">=</span> <span class="token operator">&amp;</span><span class="token keyword">mut</span> ctx<span class="token punctuation">.</span>accounts<span class="token punctuation">.</span>my_account<span class="token punctuation">;</span>
         my_account<span class="token punctuation">.</span>data <span class="token operator">=</span> data<span class="token punctuation">;</span>
         <span class="token class-name">Ok</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
     <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
-
 <span class="token attribute attr-name">#[derive(Accounts)]</span>
 <span class="token keyword">pub</span> <span class="token keyword">struct</span> <span class="token type-definition class-name">Initialize</span><span class="token operator">&lt;</span><span class="token lifetime-annotation symbol">'info</span><span class="token operator">&gt;</span> <span class="token punctuation">{</span>
     <span class="token attribute attr-name">#[account(mut)]</span>
     <span class="token keyword">pub</span> my_account<span class="token punctuation">:</span> <span class="token class-name">ProgramAccount</span><span class="token operator">&lt;</span><span class="token lifetime-annotation symbol">'info</span><span class="token punctuation">,</span> <span class="token class-name">MyAccount</span><span class="token operator">&gt;</span><span class="token punctuation">,</span>
 <span class="token punctuation">}</span>
-
 <span class="token attribute attr-name">#[derive(AnchorSerialize, AnchorDeserialize)]</span>
 <span class="token keyword">pub</span> <span class="token keyword">struct</span> <span class="token type-definition class-name">MyAccount</span> <span class="token punctuation">{</span>
     <span class="token keyword">pub</span> data<span class="token punctuation">:</span> <span class="token keyword">u64</span><span class="token punctuation">,</span>
