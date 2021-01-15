@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#3eaf7c">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <link rel="preload" href="/anchor/assets/css/0.styles.0a982d8b.css" as="style"><link rel="preload" href="/anchor/assets/js/app.989ec993.js" as="script"><link rel="preload" href="/anchor/assets/js/2.8c48d9d7.js" as="script"><link rel="preload" href="/anchor/assets/js/16.57f15eda.js" as="script"><link rel="prefetch" href="/anchor/assets/js/10.12f433dc.js"><link rel="prefetch" href="/anchor/assets/js/11.41293f3f.js"><link rel="prefetch" href="/anchor/assets/js/12.b600df04.js"><link rel="prefetch" href="/anchor/assets/js/13.df85a5e3.js"><link rel="prefetch" href="/anchor/assets/js/14.440532f3.js"><link rel="prefetch" href="/anchor/assets/js/15.c906ec91.js"><link rel="prefetch" href="/anchor/assets/js/3.0277475e.js"><link rel="prefetch" href="/anchor/assets/js/4.bf905f50.js"><link rel="prefetch" href="/anchor/assets/js/5.c82fd70a.js"><link rel="prefetch" href="/anchor/assets/js/6.ffe6f60a.js"><link rel="prefetch" href="/anchor/assets/js/7.a00e933e.js"><link rel="prefetch" href="/anchor/assets/js/8.94f9e596.js"><link rel="prefetch" href="/anchor/assets/js/9.2250d602.js">
+    <link rel="preload" href="/anchor/assets/css/0.styles.0a982d8b.css" as="style"><link rel="preload" href="/anchor/assets/js/app.0ba0cd08.js" as="script"><link rel="preload" href="/anchor/assets/js/2.8c48d9d7.js" as="script"><link rel="preload" href="/anchor/assets/js/16.7acf309c.js" as="script"><link rel="prefetch" href="/anchor/assets/js/10.dfafde87.js"><link rel="prefetch" href="/anchor/assets/js/11.6696f083.js"><link rel="prefetch" href="/anchor/assets/js/12.6d19a875.js"><link rel="prefetch" href="/anchor/assets/js/13.ae44f6c5.js"><link rel="prefetch" href="/anchor/assets/js/14.a0425440.js"><link rel="prefetch" href="/anchor/assets/js/15.690abb6c.js"><link rel="prefetch" href="/anchor/assets/js/3.0277475e.js"><link rel="prefetch" href="/anchor/assets/js/4.bf905f50.js"><link rel="prefetch" href="/anchor/assets/js/5.c82fd70a.js"><link rel="prefetch" href="/anchor/assets/js/6.ffe6f60a.js"><link rel="prefetch" href="/anchor/assets/js/7.a00e933e.js"><link rel="prefetch" href="/anchor/assets/js/8.94f9e596.js"><link rel="prefetch" href="/anchor/assets/js/9.2250d602.js">
     <link rel="stylesheet" href="/anchor/assets/css/0.styles.0a982d8b.css">
   </head>
   <body>
@@ -76,9 +76,9 @@ instruction via CPI.</p> <div class="language-rs extra-class"><pre class="langua
 <span class="token punctuation">}</span></code></pre></div><p>Things to notice</p> <ul><li>We create a <code>CpiContext</code> object with the target instruction's accounts and program,
 here <code>SetData</code> and <code>puppet_program</code>.</li> <li>To invoke an instruction on another program, just use the <code>cpi</code> module on the crate, here, <code>puppet::cpi::set_data</code>.</li> <li>Our <code>Accounts</code> struct has a new type, <code>CpiAccount</code>, containing the target program's <code>Puppet</code>
 account. Think of <code>CpiAccount</code> exactly like <code>ProgramAccount</code>, except used for accounts <em>not</em>
-owned by the current program.</li></ul> <details class="custom-block details"><summary>DETAILS</summary> <p>When adding another Anchor program to your crate's <code>Cargo.toml</code>, make sure to specify the <code>no-entrypoint</code>
-feature. If you look at the <code>Cargo.toml</code> for this example, you'll see
-<code>puppet = { path = &quot;../puppet&quot;, features = [&quot;no-entrypoint&quot;] }</code>.</p></details> <h2 id="signer-seeds"><a href="#signer-seeds" class="header-anchor">#</a> Signer Seeds</h2> <p>Often it's useful for a program to sign instructions. For example, if a program controls a token
+owned by the current program.</li></ul> <div class="custom-block tip"><p class="custom-block-title">TIP</p> <p>When using another Anchor program for CPI, make sure to specify the <code>cpi</code> feature in your <code>Cargo.toml</code>.
+If you look at the <code>Cargo.toml</code> for this example, you'll see
+<code>puppet = { path = &quot;../puppet&quot;, features = [&quot;cpi&quot;] }</code>.</p></div> <h2 id="signer-seeds"><a href="#signer-seeds" class="header-anchor">#</a> Signer Seeds</h2> <p>Often it's useful for a program to sign instructions. For example, if a program controls a token
 account and wants to send tokens to another account, it must sign. In Solana, this is done by specifying
 &quot;signer seeds&quot; on CPI (TODO: add link to docs). To do this using the example above, simply change
 <code>CpiContext::new(cpi_accounts, cpi_program)</code> to
@@ -91,6 +91,6 @@ are appreciated. For direct questions or support, join the <a href="https://disc
       <a href="/anchor/tutorials/tutorial-2.html" class="prev">
         Tutorial 2: Account Constraints and Access Control
       </a></span> <!----></p></div> </main></div><div class="global-ui"></div></div>
-    <script src="/anchor/assets/js/app.989ec993.js" defer></script><script src="/anchor/assets/js/2.8c48d9d7.js" defer></script><script src="/anchor/assets/js/16.57f15eda.js" defer></script>
+    <script src="/anchor/assets/js/app.0ba0cd08.js" defer></script><script src="/anchor/assets/js/2.8c48d9d7.js" defer></script><script src="/anchor/assets/js/16.7acf309c.js" defer></script>
   </body>
 </html>
