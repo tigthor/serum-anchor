@@ -587,14 +587,23 @@ fn test(skip_deploy: bool) -> Result<()> {
     with_workspace(|cfg, _path, _cargo| {
         // Bootup validator, if needed.
         let validator_handle = match cfg.cluster.url() {
-            "http://127.0.0.1:8899" => Some(start_test_validator()?),
-            _ => None,
+            "http://127.0.0.1:8899" => {
+                build(None)?;
+                let flags = match skip_deploy {
+                    true => None,
+                    false => Some(genesis_flags()?),
+                };
+                Some(start_test_validator(flags)?)
+            }
+            _ => {
+                if !skip_deploy {
+                    deploy(None, None)?;
+                }
+                None
+            }
         };
 
-        // Deploy programs.
-        if !skip_deploy {
-            deploy(None, None)?;
-        }
+        let log_streams = stream_logs(&cfg.cluster.url())?;
 
         // Run the tests.
         if let Err(e) = std::process::Command::new("mocha")
@@ -615,8 +624,70 @@ fn test(skip_deploy: bool) -> Result<()> {
             validator_handle.kill()?;
         }
 
+        for mut stream in log_streams {
+            stream.kill()?;
+        }
+
         Ok(())
     })
+}
+
+// Returns the solana-test-validator flags to embed the workspace programs
+// in the genesis block. This allows us to run tests without every deploying.
+fn genesis_flags() -> Result<Vec<String>> {
+    let mut flags = Vec::new();
+    for mut program in read_all_programs()? {
+        let binary_path = program.binary_path().display().to_string();
+
+        let kp = Keypair::generate(&mut OsRng);
+        let address = kp.pubkey().to_string();
+
+        flags.push("--bpf-program".to_string());
+        flags.push(address.clone());
+        flags.push(binary_path);
+
+        // Add program address to the IDL.
+        program.idl.metadata = Some(serde_json::to_value(IdlTestMetadata { address })?);
+
+        // Persist it.
+        let idl_out = PathBuf::from("target/idl")
+            .join(&program.idl.name)
+            .with_extension("json");
+        write_idl(&program.idl, OutFile::File(idl_out))?;
+    }
+    Ok(flags)
+}
+
+fn stream_logs(url: &str) -> Result<Vec<std::process::Child>> {
+    let program_logs_dir = ".anchor/program-logs";
+    if Path::new(program_logs_dir).exists() {
+        std::fs::remove_dir_all(program_logs_dir)?;
+    }
+    fs::create_dir_all(program_logs_dir)?;
+    let mut handles = vec![];
+    for program in read_all_programs()? {
+        let mut file = File::open(&format!("target/idl/{}.json", program.lib_name))?;
+        let mut contents = vec![];
+        file.read_to_end(&mut contents)?;
+        let idl: Idl = serde_json::from_slice(&contents)?;
+        let metadata = idl.metadata.ok_or(anyhow!("Program address not found."))?;
+        let metadata: IdlTestMetadata = serde_json::from_value(metadata)?;
+
+        let log_file = File::create(format!(
+            "{}/{}.{}.log",
+            program_logs_dir, metadata.address, program.idl.name
+        ))?;
+        let stdio = std::process::Stdio::from(log_file);
+        let child = std::process::Command::new("solana")
+            .arg("logs")
+            .arg(metadata.address)
+            .arg("--url")
+            .arg(url)
+            .stdout(stdio)
+            .spawn()?;
+        handles.push(child);
+    }
+    Ok(handles)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -624,7 +695,7 @@ pub struct IdlTestMetadata {
     address: String,
 }
 
-fn start_test_validator() -> Result<Child> {
+fn start_test_validator(flags: Option<Vec<String>>) -> Result<Child> {
     fs::create_dir_all(".anchor")?;
     let test_ledger_filename = ".anchor/test-ledger";
     let test_ledger_log_filename = ".anchor/test-ledger-log.txt";
@@ -642,6 +713,7 @@ fn start_test_validator() -> Result<Child> {
     let validator_handle = std::process::Command::new("solana-test-validator")
         .arg("--ledger")
         .arg(test_ledger_filename)
+        .args(flags.unwrap_or(Vec::new()))
         .stdout(Stdio::from(test_validator_stdout))
         .stderr(Stdio::from(test_validator_stderr))
         .spawn()

@@ -66,8 +66,7 @@ export type RpcFn = (...args: any[]) => Promise<TransactionSignature>;
 /**
  * Ix is a function to create a `TransactionInstruction` generated from an IDL.
  */
-export type IxFn = IxProps & ((...args: any[]) => TransactionInstruction);
-
+export type IxFn = IxProps & ((...args: any[]) => any);
 type IxProps = {
   accounts: (ctx: RpcAccounts) => any;
 };
@@ -218,20 +217,36 @@ export class RpcFactory {
 
     // Namespace with all rpc functions.
     const rpc: Rpcs = {};
+    const ix: Ixs = {};
+
     idl.state.methods.forEach((m: IdlStateMethod) => {
-      rpc[m.name] = async (...args: any[]): Promise<TransactionSignature> => {
-        const [ixArgs, ctx] = splitArgsAndCtx(m, [...args]);
-        const keys = await stateInstructionKeys(programId, provider, m, ctx);
-        const tx = new Transaction();
-        tx.add(
-          new TransactionInstruction({
-            keys: keys.concat(
-              RpcFactory.accountsArray(ctx.accounts, m.accounts)
-            ),
-            programId,
-            data: coder.instruction.encode(toInstruction(m, ...ixArgs)),
-          })
+      const accounts = async (accounts: RpcAccounts): Promise<any> => {
+        const keys = await stateInstructionKeys(
+          programId,
+          provider,
+          m,
+          accounts
         );
+        return keys.concat(RpcFactory.accountsArray(accounts, m.accounts));
+      };
+      const ixFn = async (...args: any[]): Promise<TransactionInstruction> => {
+        const [ixArgs, ctx] = splitArgsAndCtx(m, [...args]);
+        return new TransactionInstruction({
+          keys: await accounts(ctx.accounts),
+          programId,
+          data: coder.instruction.encodeState(
+            m.name,
+            toInstruction(m, ...ixArgs)
+          ),
+        });
+      };
+      ixFn["accounts"] = accounts;
+      ix[m.name] = ixFn;
+
+      rpc[m.name] = async (...args: any[]): Promise<TransactionSignature> => {
+        const [_, ctx] = splitArgsAndCtx(m, [...args]);
+        const tx = new Transaction();
+        tx.add(await ix[m.name](...args));
         try {
           const txSig = await provider.send(tx, ctx.signers, ctx.options);
           return txSig;
@@ -244,8 +259,9 @@ export class RpcFactory {
         }
       };
     });
-    state["rpc"] = rpc;
 
+    state["rpc"] = rpc;
+    state["instruction"] = ix;
     // Calculates the address of the program's global state object account.
     state["address"] = async (): Promise<PublicKey> =>
       programStateAddress(programId);
@@ -316,12 +332,15 @@ export class RpcFactory {
       }
 
       if (ctx.__private && ctx.__private.logAccounts) {
-        console.log("Outoing account metas:", keys);
+        console.log("Outgoing account metas:", keys);
       }
       return new TransactionInstruction({
         keys,
         programId,
-        data: coder.instruction.encode(toInstruction(idlIx, ...ixArgs)),
+        data: coder.instruction.encode(
+          idlIx.name,
+          toInstruction(idlIx, ...ixArgs)
+        ),
       });
     };
 
@@ -609,12 +628,7 @@ function toInstruction(idlIx: IdlInstruction | IdlStateMethod, ...args: any[]) {
     idx += 1;
   });
 
-  // JavaScript representation of the rust enum variant.
-  const name = camelCase(idlIx.name);
-  const ixVariant: { [key: string]: any } = {};
-  ixVariant[name] = ix;
-
-  return ixVariant;
+  return ix;
 }
 
 // Throws error if any account required for the `ix` is not given.
@@ -652,7 +666,7 @@ async function stateInstructionKeys(
   programId: PublicKey,
   provider: Provider,
   m: IdlStateMethod,
-  ctx: RpcContext
+  accounts: RpcAccounts
 ) {
   if (m.name === "new") {
     // Ctor `new` method.
@@ -686,7 +700,7 @@ async function stateInstructionKeys(
       },
     ];
   } else {
-    validateAccounts(m.accounts, ctx.accounts);
+    validateAccounts(m.accounts, accounts);
     return [
       {
         pubkey: await programStateAddress(programId),

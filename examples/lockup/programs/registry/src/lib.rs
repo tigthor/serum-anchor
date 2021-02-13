@@ -6,7 +6,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program_option::COption;
 use anchor_spl::token::{self, Mint, TokenAccount, Transfer};
-use lockup::{CreateVesting, Vesting};
+use lockup::{CreateVesting, RealizeLock, Realizor, Vesting};
 use std::convert::Into;
 
 #[program]
@@ -23,6 +23,45 @@ mod registry {
             Ok(Registry {
                 lockup_program: *ctx.accounts.lockup_program.key,
             })
+        }
+
+        pub fn set_lockup_program(
+            &mut self,
+            ctx: Context<SetLockupProgram>,
+            lockup_program: Pubkey,
+        ) -> Result<()> {
+            // Hard code the authority because the first version of this program
+            // did not set an authority account in the global state.
+            //
+            // When we remove the program's upgrade authority, we should remove
+            // this method first, redeploy, then remove the upgrade authority.
+            let expected: Pubkey = "HUgFuN4PbvF5YzjDSw9dQ8uTJUcwm2ANsMXwvRdY4ABx"
+                .parse()
+                .unwrap();
+            if ctx.accounts.authority.key != &expected {
+                return Err(ErrorCode::InvalidProgramAuthority.into());
+            }
+
+            self.lockup_program = lockup_program;
+
+            Ok(())
+        }
+    }
+
+    impl<'info> RealizeLock<'info, IsRealized<'info>> for Registry {
+        fn is_realized(ctx: Context<IsRealized>, v: Vesting) -> ProgramResult {
+            if let Some(realizor) = &v.realizor {
+                if &realizor.metadata != ctx.accounts.member.to_account_info().key {
+                    return Err(ErrorCode::InvalidRealizorMetadata.into());
+                }
+                assert!(ctx.accounts.member.beneficiary == v.beneficiary);
+                let total_staked =
+                    ctx.accounts.member_spt.amount + ctx.accounts.member_spt_locked.amount;
+                if total_staked != 0 {
+                    return Err(ErrorCode::UnrealizedReward.into());
+                }
+            }
+            Ok(())
         }
     }
 
@@ -341,6 +380,16 @@ mod registry {
         if ctx.accounts.clock.unix_timestamp >= expiry_ts {
             return Err(ErrorCode::InvalidExpiry.into());
         }
+        if let RewardVendorKind::Locked {
+            start_ts,
+            end_ts,
+            period_count,
+        } = kind
+        {
+            if !lockup::is_valid_schedule(start_ts, end_ts, period_count) {
+                return Err(ErrorCode::InvalidVestingSchedule.into());
+            }
+        }
 
         // Transfer funds into the vendor's vault.
         token::transfer(ctx.accounts.into(), total)?;
@@ -367,7 +416,7 @@ mod registry {
         vendor.from = *ctx.accounts.depositor_authority.key;
         vendor.total = total;
         vendor.expired = false;
-        vendor.kind = kind.clone();
+        vendor.kind = kind;
 
         Ok(())
     }
@@ -417,12 +466,13 @@ mod registry {
         ctx: Context<'a, 'b, 'c, 'info, ClaimRewardLocked<'info>>,
         nonce: u8,
     ) -> Result<()> {
-        let (end_ts, period_count) = match ctx.accounts.cmn.vendor.kind {
+        let (start_ts, end_ts, period_count) = match ctx.accounts.cmn.vendor.kind {
             RewardVendorKind::Unlocked => return Err(ErrorCode::ExpectedLockedVendor.into()),
             RewardVendorKind::Locked {
+                start_ts,
                 end_ts,
                 period_count,
-            } => (end_ts, period_count),
+            } => (start_ts, end_ts, period_count),
         };
 
         // Reward distribution.
@@ -435,14 +485,14 @@ mod registry {
             .unwrap();
         assert!(reward_amount > 0);
 
-        // Lockup program requires the timestamp to be >= clock's timestamp.
-        // So update if the time has already passed. 60 seconds is arbitrary.
-        let end_ts = match end_ts > ctx.accounts.cmn.clock.unix_timestamp + 60 {
-            true => end_ts,
-            false => ctx.accounts.cmn.clock.unix_timestamp + 60,
-        };
+        // Specify the vesting account's realizor, so that unlocks can only
+        // execute once completely unstaked.
+        let realizor = Some(Realizor {
+            program: *ctx.program_id,
+            metadata: *ctx.accounts.cmn.member.to_account_info().key,
+        });
 
-        // Create lockup account for the member's beneficiary.
+        // CPI: Create lockup account for the member's beneficiary.
         let seeds = &[
             ctx.accounts.cmn.registrar.to_account_info().key.as_ref(),
             ctx.accounts.cmn.vendor.to_account_info().key.as_ref(),
@@ -457,13 +507,15 @@ mod registry {
         lockup::cpi::create_vesting(
             cpi_ctx,
             ctx.accounts.cmn.member.beneficiary,
-            end_ts,
-            period_count,
             reward_amount,
             nonce,
+            start_ts,
+            end_ts,
+            period_count,
+            realizor,
         )?;
 
-        // Update the member account.
+        // Make sure this reward can't be processed more than once.
         let member = &mut ctx.accounts.cmn.member;
         member.rewards_cursor = ctx.accounts.cmn.vendor.reward_event_q_cursor + 1;
 
@@ -607,6 +659,23 @@ pub struct BalanceSandboxAccounts<'info> {
 #[derive(Accounts)]
 pub struct Ctor<'info> {
     lockup_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SetLockupProgram<'info> {
+    #[account(signer)]
+    authority: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct IsRealized<'info> {
+    #[account(
+        "&member.balances.spt == member_spt.to_account_info().key",
+        "&member.balances_locked.spt == member_spt_locked.to_account_info().key"
+    )]
+    member: ProgramAccount<'info, Member>,
+    member_spt: CpiAccount<'info, TokenAccount>,
+    member_spt_locked: CpiAccount<'info, TokenAccount>,
 }
 
 #[derive(Accounts)]
@@ -1123,7 +1192,11 @@ pub struct RewardVendor {
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq)]
 pub enum RewardVendorKind {
     Unlocked,
-    Locked { end_ts: i64, period_count: u64 },
+    Locked {
+        start_ts: i64,
+        end_ts: i64,
+        period_count: u64,
+    },
 }
 
 #[error]
@@ -1168,6 +1241,16 @@ pub enum ErrorCode {
     ExpectedUnlockedVendor,
     #[msg("Locked deposit from an invalid deposit authority.")]
     InvalidVestingSigner,
+    #[msg("Locked rewards cannot be realized until one unstaked all tokens.")]
+    UnrealizedReward,
+    #[msg("The beneficiary doesn't match.")]
+    InvalidBeneficiary,
+    #[msg("The given member account does not match the realizor metadata.")]
+    InvalidRealizorMetadata,
+    #[msg("Invalid vesting schedule for the locked reward.")]
+    InvalidVestingSchedule,
+    #[msg("Please specify the correct authority for this program.")]
+    InvalidProgramAuthority,
 }
 
 impl<'a, 'b, 'c, 'info> From<&mut Deposit<'info>>
