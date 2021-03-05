@@ -8,10 +8,11 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Config {
     pub cluster: Cluster,
     pub wallet: WalletPath,
+    pub test: Option<Test>,
 }
 
 impl Config {
@@ -33,13 +34,13 @@ impl Config {
                 let p = f?.path();
                 if let Some(filename) = p.file_name() {
                     if filename.to_str() == Some("Cargo.toml") {
-                        cargo_toml_level = Some(PathBuf::from(p));
+                        cargo_toml_level = Some(p);
                     } else if filename.to_str() == Some("Anchor.toml") {
                         let mut cfg_file = File::open(&p)?;
                         let mut cfg_contents = String::new();
                         cfg_file.read_to_string(&mut cfg_contents)?;
                         let cfg = cfg_contents.parse()?;
-                        anchor_toml = Some((cfg, PathBuf::from(p)));
+                        anchor_toml = Some((cfg, p));
                     }
                 }
             }
@@ -61,10 +62,11 @@ impl Config {
 
 // Pubkey serializes as a byte array so use this type a hack to serialize
 // into base 58 strings.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct _Config {
     cluster: String,
     wallet: String,
+    test: Option<Test>,
 }
 
 impl ToString for Config {
@@ -72,6 +74,7 @@ impl ToString for Config {
         let cfg = _Config {
             cluster: format!("{}", self.cluster),
             wallet: self.wallet.to_string(),
+            test: self.test.clone(),
         };
 
         toml::to_string(&cfg).expect("Must be well formed")
@@ -84,12 +87,25 @@ impl FromStr for Config {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let cfg: _Config = toml::from_str(s)
             .map_err(|e| anyhow::format_err!("Unable to deserialize config: {}", e.to_string()))?;
-
         Ok(Config {
             cluster: cfg.cluster.parse()?,
             wallet: shellexpand::tilde(&cfg.wallet).parse()?,
+            test: cfg.test,
         })
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Test {
+    pub genesis: Vec<GenesisEntry>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GenesisEntry {
+    // Base58 pubkey string.
+    pub address: String,
+    // Filepath to the compiled program to embed into the genesis.
+    pub program: String,
 }
 
 // TODO: this should read idl dir instead of parsing source.
@@ -121,7 +137,7 @@ pub fn extract_lib_name(path: impl AsRef<Path>) -> Result<String> {
             None => Err(anyhow!("lib not found in Cargo.toml")),
             Some(lib) => match lib
                 .get("name")
-                .ok_or(anyhow!("lib name not found in Cargo.toml"))?
+                .ok_or_else(|| anyhow!("lib name not found in Cargo.toml"))?
             {
                 toml::Value::String(n) => Ok(n.to_string()),
                 _ => Err(anyhow!("lib name must be a string")),

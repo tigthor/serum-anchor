@@ -130,10 +130,15 @@ type RpcAccounts = {
   [key: string]: PublicKey | RpcAccounts;
 };
 
-export type State = {
-  address: () => Promise<PublicKey>;
-  rpc: Rpcs;
-};
+export type State = () =>
+  | Promise<any>
+  | {
+      address: () => Promise<PublicKey>;
+      rpc: Rpcs;
+      instruction: Ixs;
+      subscribe: (address: PublicKey, commitment?: Commitment) => EventEmitter;
+      unsubscribe: (address: PublicKey) => void;
+    };
 
 // Tracks all subscriptions.
 const subscriptions: Map<string, Subscription> = new Map();
@@ -246,6 +251,9 @@ export class RpcFactory {
       rpc[m.name] = async (...args: any[]): Promise<TransactionSignature> => {
         const [_, ctx] = splitArgsAndCtx(m, [...args]);
         const tx = new Transaction();
+        if (ctx.instructions !== undefined) {
+          tx.add(...ctx.instructions);
+        }
         tx.add(await ix[m.name](...args));
         try {
           const txSig = await provider.send(tx, ctx.signers, ctx.options);
@@ -502,6 +510,10 @@ export class RpcFactory {
       // @ts-ignore
       accountsNamespace["unsubscribe"] = (address: PublicKey) => {
         let sub = subscriptions.get(address.toString());
+        if (!sub) {
+          console.warn("Address is not subscribed");
+          return;
+        }
         if (subscriptions) {
           provider.connection
             .removeAccountChangeListener(sub.listener)

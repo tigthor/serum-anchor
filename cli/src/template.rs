@@ -29,7 +29,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = {{ git = "https://github.com/project-serum/anchor", features = ["derive"] }}
+anchor-lang = "0.2.1"
 "#,
         name,
         name.to_snake_case(),
@@ -65,7 +65,7 @@ main();
 }
 
 pub fn deploy_script() -> String {
-    return r#"
+    r#"
 // Migrations are an early feature. Currently, they're nothing more than this
 // single deploy script that's invoked from the CLI, injecting a provider
 // configured from the workspace's Anchor.toml.
@@ -79,7 +79,7 @@ module.exports = async function (provider) {
   // Add your deploy script here.
 }
 "#
-    .to_string();
+    .to_string()
 }
 pub fn xargo_toml() -> String {
     r#"[target.bpfel-unknown-unknown.dependencies.std]
@@ -127,4 +127,41 @@ describe('{}', () => {{
         name,
         name.to_camel_case(),
     )
+}
+
+pub fn ts_mocha(name: &str) -> String {
+    format!(
+        r#"import * as anchor from '@project-serum/anchor';
+
+describe('{}', () => {{
+
+  // Configure the client to use the local cluster.
+  anchor.setProvider(anchor.Provider.env());
+
+  it('Is initialized!', async () => {{
+    // Add your test here.
+    const program = anchor.workspace.{};
+    const tx = await program.rpc.initialize();
+    console.log("Your transaction signature", tx);
+  }});
+}});
+"#,
+        name,
+        name.to_camel_case(),
+    )
+}
+
+pub fn ts_config() -> String {
+    r#"{
+  "compilerOptions": {
+    "types": ["mocha", "chai"],
+    "typeRoots": ["./node_modules/@types"],
+    "lib": ["es2015"],
+    "module": "commonjs",
+    "target": "es6",
+    "esModuleInterop": true
+  }
+}
+"#
+    .to_string()
 }

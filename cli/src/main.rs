@@ -35,7 +35,11 @@ pub struct Opts {
 #[derive(Debug, Clap)]
 pub enum Command {
     /// Initializes a workspace.
-    Init { name: String },
+    Init {
+        name: String,
+        #[clap(short, long)]
+        typescript: bool,
+    },
     /// Builds the workspace.
     Build {
         /// Output directory for the IDL.
@@ -46,8 +50,12 @@ pub enum Command {
     Test {
         /// Use this flag if you want to run tests against previously deployed
         /// programs.
-        #[clap(short, long)]
+        #[clap(long)]
         skip_deploy: bool,
+        /// Flag to skip starting a local validator, if the configured cluster
+        /// url is a localnet.
+        #[clap(long)]
+        skip_local_validator: bool,
     },
     /// Creates a new program.
     New { name: String },
@@ -147,7 +155,7 @@ pub enum IdlCommand {
 fn main() -> Result<()> {
     let opts = Opts::parse();
     match opts.command {
-        Command::Init { name } => init(name),
+        Command::Init { name, typescript } => init(name, typescript),
         Command::New { name } => new(name),
         Command::Build { idl } => build(idl),
         Command::Deploy { url, keypair } => deploy(url, keypair),
@@ -158,12 +166,15 @@ fn main() -> Result<()> {
         Command::Idl { subcmd } => idl(subcmd),
         Command::Migrate { url } => migrate(url),
         Command::Launch { url, keypair } => launch(url, keypair),
-        Command::Test { skip_deploy } => test(skip_deploy),
+        Command::Test {
+            skip_deploy,
+            skip_local_validator,
+        } => test(skip_deploy, skip_local_validator),
         Command::Airdrop { url } => airdrop(url),
     }
 }
 
-fn init(name: String) -> Result<()> {
+fn init(name: String, typescript: bool) -> Result<()> {
     let cfg = Config::discover()?;
 
     if cfg.is_some() {
@@ -190,8 +201,17 @@ fn init(name: String) -> Result<()> {
 
     // Build the test suite.
     fs::create_dir("tests")?;
-    let mut mocha = File::create(&format!("tests/{}.js", name))?;
-    mocha.write_all(template::mocha(&name).as_bytes())?;
+    if typescript {
+        // Build typescript config
+        let mut ts_config = File::create("tsconfig.json")?;
+        ts_config.write_all(template::ts_config().as_bytes())?;
+
+        let mut mocha = File::create(&format!("tests/{}.ts", name))?;
+        mocha.write_all(template::ts_mocha(&name).as_bytes())?;
+    } else {
+        let mut mocha = File::create(&format!("tests/{}.js", name))?;
+        mocha.write_all(template::mocha(&name).as_bytes())?;
+    }
 
     // Build the migrations directory.
     fs::create_dir("migrations")?;
@@ -306,7 +326,7 @@ fn fetch_idl(program_id: Pubkey) -> Result<Idl> {
     let idl_addr = IdlAccount::address(&program_id);
 
     let account = client
-        .get_account_with_commitment(&idl_addr, CommitmentConfig::recent())?
+        .get_account_with_commitment(&idl_addr, CommitmentConfig::processed())?
         .value
         .map_or(Err(anyhow!("Account not found")), Ok)?;
 
@@ -421,7 +441,7 @@ fn idl_set_authority(program_id: Pubkey, new_authority: Pubkey) -> Result<()> {
         );
         client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
-            CommitmentConfig::single(),
+            CommitmentConfig::confirmed(),
             RpcSendTransactionConfig {
                 skip_preflight: true,
                 ..RpcSendTransactionConfig::default()
@@ -479,7 +499,7 @@ fn idl_clear(cfg: &Config, program_id: &Pubkey) -> Result<()> {
     );
     client.send_and_confirm_transaction_with_spinner_and_config(
         &tx,
-        CommitmentConfig::single(),
+        CommitmentConfig::confirmed(),
         RpcSendTransactionConfig {
             skip_preflight: true,
             ..RpcSendTransactionConfig::default()
@@ -539,7 +559,7 @@ fn idl_write(cfg: &Config, program_id: &Pubkey, idl: &Idl) -> Result<()> {
         );
         client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
-            CommitmentConfig::single(),
+            CommitmentConfig::confirmed(),
             RpcSendTransactionConfig {
                 skip_preflight: true,
                 ..RpcSendTransactionConfig::default()
@@ -583,7 +603,7 @@ enum OutFile {
 }
 
 // Builds, deploys, and tests all workspace programs in a single command.
-fn test(skip_deploy: bool) -> Result<()> {
+fn test(skip_deploy: bool, skip_local_validator: bool) -> Result<()> {
     with_workspace(|cfg, _path, _cargo| {
         // Bootup validator, if needed.
         let validator_handle = match cfg.cluster.url() {
@@ -591,9 +611,12 @@ fn test(skip_deploy: bool) -> Result<()> {
                 build(None)?;
                 let flags = match skip_deploy {
                     true => None,
-                    false => Some(genesis_flags()?),
+                    false => Some(genesis_flags(cfg)?),
                 };
-                Some(start_test_validator(flags)?)
+                match skip_local_validator {
+                    true => None,
+                    false => Some(start_test_validator(flags)?),
+                }
             }
             _ => {
                 if !skip_deploy {
@@ -602,23 +625,37 @@ fn test(skip_deploy: bool) -> Result<()> {
                 None
             }
         };
-
         let log_streams = stream_logs(&cfg.cluster.url())?;
 
+        let ts_config_exist = Path::new("tsconfig.json").exists();
+
         // Run the tests.
-        if let Err(e) = std::process::Command::new("mocha")
-            .arg("-t")
-            .arg("1000000")
-            .arg("tests/")
-            .env("ANCHOR_PROVIDER_URL", cfg.cluster.url())
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
-            .output()
-        {
+        let exit = match ts_config_exist {
+            true => std::process::Command::new("ts-mocha")
+                .arg("-p")
+                .arg("./tsconfig.json")
+                .arg("-t")
+                .arg("1000000")
+                .arg("tests/**/*.spec.ts")
+                .env("ANCHOR_PROVIDER_URL", cfg.cluster.url())
+                .stdout(Stdio::inherit())
+                .stderr(Stdio::inherit())
+                .output()?,
+            false => std::process::Command::new("mocha")
+                .arg("-t")
+                .arg("1000000")
+                .arg("tests/")
+                .env("ANCHOR_PROVIDER_URL", cfg.cluster.url())
+                .stdout(Stdio::inherit())
+                .stderr(Stdio::inherit())
+                .output()?,
+        };
+
+        if !exit.status.success() {
             if let Some(mut validator_handle) = validator_handle {
                 validator_handle.kill()?;
             }
-            return Err(anyhow::format_err!("{}", e.to_string()));
+            std::process::exit(exit.status.code().unwrap());
         }
         if let Some(mut validator_handle) = validator_handle {
             validator_handle.kill()?;
@@ -634,7 +671,7 @@ fn test(skip_deploy: bool) -> Result<()> {
 
 // Returns the solana-test-validator flags to embed the workspace programs
 // in the genesis block. This allows us to run tests without every deploying.
-fn genesis_flags() -> Result<Vec<String>> {
+fn genesis_flags(cfg: &Config) -> Result<Vec<String>> {
     let mut flags = Vec::new();
     for mut program in read_all_programs()? {
         let binary_path = program.binary_path().display().to_string();
@@ -655,6 +692,13 @@ fn genesis_flags() -> Result<Vec<String>> {
             .with_extension("json");
         write_idl(&program.idl, OutFile::File(idl_out))?;
     }
+    if let Some(test) = cfg.test.as_ref() {
+        for entry in &test.genesis {
+            flags.push("--bpf-program".to_string());
+            flags.push(entry.address.clone());
+            flags.push(entry.program.clone());
+        }
+    }
     Ok(flags)
 }
 
@@ -670,7 +714,9 @@ fn stream_logs(url: &str) -> Result<Vec<std::process::Child>> {
         let mut contents = vec![];
         file.read_to_end(&mut contents)?;
         let idl: Idl = serde_json::from_slice(&contents)?;
-        let metadata = idl.metadata.ok_or(anyhow!("Program address not found."))?;
+        let metadata = idl
+            .metadata
+            .ok_or_else(|| anyhow!("Program address not found."))?;
         let metadata: IdlTestMetadata = serde_json::from_value(metadata)?;
 
         let log_file = File::create(format!(
@@ -713,7 +759,7 @@ fn start_test_validator(flags: Option<Vec<String>>) -> Result<Child> {
     let validator_handle = std::process::Command::new("solana-test-validator")
         .arg("--ledger")
         .arg(test_ledger_filename)
-        .args(flags.unwrap_or(Vec::new()))
+        .args(flags.unwrap_or_default())
         .stdout(Stdio::from(test_validator_stdout))
         .stderr(Stdio::from(test_validator_stderr))
         .spawn()
@@ -750,8 +796,8 @@ fn _deploy(url: Option<String>, keypair: Option<String>) -> Result<Vec<(Pubkey, 
         build(None)?;
 
         // Fallback to config vars if not provided via CLI.
-        let url = url.unwrap_or(cfg.cluster.url().to_string());
-        let keypair = keypair.unwrap_or(cfg.wallet.to_string());
+        let url = url.unwrap_or_else(|| cfg.cluster.url().to_string());
+        let keypair = keypair.unwrap_or_else(|| cfg.wallet.to_string());
 
         // Deploy the programs.
         println!("Deploying workspace: {}", url);
@@ -842,8 +888,8 @@ fn launch(url: Option<String>, keypair: Option<String>) -> Result<()> {
     let programs = _deploy(url.clone(), keypair.clone())?;
 
     with_workspace(|cfg, _path, _cargo| {
-        let url = url.unwrap_or(cfg.cluster.url().to_string());
-        let keypair = keypair.unwrap_or(cfg.wallet.to_string());
+        let url = url.unwrap_or_else(|| cfg.cluster.url().to_string());
+        let keypair = keypair.unwrap_or_else(|| cfg.wallet.to_string());
 
         // Add metadata to all IDLs.
         for (address, program) in programs {
@@ -886,7 +932,7 @@ fn with_workspace<R>(f: impl FnOnce(&Config, PathBuf, Option<PathBuf>) -> R) -> 
 // The Solana CLI doesn't redeploy a program if this file exists.
 // So remove it to make all commands explicit.
 fn clear_program_keys() -> Result<()> {
-    for program in read_all_programs().expect("Programs dir doesn't exist") {
+    for program in read_all_programs()? {
         let anchor_keypair_path = program.anchor_keypair_path();
         if Path::exists(&anchor_keypair_path) {
             std::fs::remove_file(anchor_keypair_path).expect("Always remove");
@@ -943,7 +989,7 @@ fn create_idl_account(
         );
         client.send_and_confirm_transaction_with_spinner_and_config(
             &tx,
-            CommitmentConfig::single(),
+            CommitmentConfig::confirmed(),
             RpcSendTransactionConfig {
                 skip_preflight: true,
                 ..RpcSendTransactionConfig::default()
@@ -966,7 +1012,7 @@ fn migrate(url: Option<String>) -> Result<()> {
     with_workspace(|cfg, _path, _cargo| {
         println!("Running migration deploy script");
 
-        let url = url.unwrap_or(cfg.cluster.url().to_string());
+        let url = url.unwrap_or_else(|| cfg.cluster.url().to_string());
         let cur_dir = std::env::current_dir()?;
         let module_path = format!("{}/migrations/deploy.js", cur_dir.display());
         let deploy_script_host_str = template::deploy_script_host(&url, &module_path);
@@ -1005,20 +1051,19 @@ fn set_workspace_dir_or_exit() {
                 None => {
                     println!("Unable to make new program");
                 }
-                Some(parent) => match std::env::set_current_dir(&parent) {
-                    Err(_) => {
+                Some(parent) => {
+                    if std::env::set_current_dir(&parent).is_err() {
                         println!("Not in anchor workspace.");
                         std::process::exit(1);
                     }
-                    Ok(_) => {}
-                },
+                }
             };
         }
     }
 }
 
 fn airdrop(url: Option<String>) -> Result<()> {
-    let url = url.unwrap_or("https://devnet.solana.com".to_string());
+    let url = url.unwrap_or_else(|| "https://devnet.solana.com".to_string());
     loop {
         let exit = std::process::Command::new("solana")
             .arg("airdrop")
