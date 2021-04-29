@@ -14,9 +14,24 @@ use anchor_spl::dex::serum_dex::state::MarketState;
 use anchor_spl::token;
 use std::num::NonZeroU64;
 
+const SIGNER_SEEDS: [u8; 4] = *b"swap";
+
 #[program]
 pub mod swap {
     use super::*;
+
+    /// Creates an open orders account on the Serum DEX, owned by a
+    /// program-derived-address. This is used as an optional convenience for
+    /// those who don't want to maintain their own open orders account. Instead,
+    /// one can create (and use) a shared open orders account owned by this
+    /// program. This is safe because all swaps perform immediately settled
+    /// IOC orders on the DEX, so no funds are ever left inside the open orders
+    /// account.
+    #[access_control(CreateOpenOrders::accounts(&ctx))]
+    pub fn create_open_orders(ctx: Context<CreateOpenOrders>) -> Result<()> {
+        // todo: post only order and cancel
+        Ok(())
+    }
 
     /// Swaps two tokens on a single A/B market, where A is the base currency
     /// and B is the quote currency. This is just a direct IOC trade that
@@ -53,7 +68,7 @@ pub mod swap {
         let to_amount_before = token::accessor::amount(to_token)?;
 
         // Execute trade.
-        let orderbook: OrderbookClient<'info> = (&*ctx.accounts).into();
+        let orderbook = ctx.accounts.orderbook(ctx.program_id);
         match side {
             Side::Bid => orderbook.buy(amount, referral.clone())?,
             Side::Ask => orderbook.sell(amount, referral.clone())?,
@@ -119,7 +134,7 @@ pub mod swap {
             let quote_before = token::accessor::amount(&ctx.accounts.pc_wallet)?;
 
             // Execute the trade.
-            let orderbook = ctx.accounts.orderbook_from();
+            let orderbook = ctx.accounts.orderbook_from(ctx.program_id);
             orderbook.sell(amount, referral.clone())?;
             orderbook.settle(referral.clone())?;
 
@@ -141,7 +156,7 @@ pub mod swap {
             let quote_before = token::accessor::amount(&ctx.accounts.pc_wallet)?;
 
             // Execute the trade.
-            let orderbook = ctx.accounts.orderbook_to();
+            let orderbook = ctx.accounts.orderbook_to(ctx.program_id);
             orderbook.buy(sell_proceeds, referral.clone())?;
             orderbook.settle(referral)?;
 
@@ -183,6 +198,29 @@ fn apply_risk_checks(event: DidSwap) -> Result<()> {
     Ok(())
 }
 
+#[derive(Accounts)]
+pub struct CreateOpenOrders<'info> {
+    market: MarketAccounts<'info>,
+    authority: AccountInfo<'info>,
+    #[account(mut)]
+    pc_wallet: AccountInfo<'info>,
+    // Programs.
+    dex_program: AccountInfo<'info>,
+    token_program: AccountInfo<'info>,
+    // Sysvars.
+    rent: AccountInfo<'info>,
+}
+
+impl<'info> CreateOpenOrders<'info> {
+    pub fn accounts(ctx: &Context<CreateOpenOrders>) -> Result<()> {
+        let (pda, _) = Pubkey::find_program_address(&[&SIGNER_SEEDS], ctx.program_id);
+        if ctx.accounts.authority.key != &pda {
+            return Err(ErrorCode::InvalidPda.into());
+        }
+        Ok(())
+    }
+}
+
 // The only constraint imposed on these accounts is that the market's base
 // currency mint is not equal to the quote currency's. All other checks are
 // done by the DEX on CPI.
@@ -200,15 +238,16 @@ pub struct Swap<'info> {
     rent: AccountInfo<'info>,
 }
 
-impl<'info> From<&Swap<'info>> for OrderbookClient<'info> {
-    fn from(accounts: &Swap<'info>) -> OrderbookClient<'info> {
+impl<'info> Swap<'info> {
+    fn orderbook(&self, program_id: &Pubkey) -> OrderbookClient<'info> {
         OrderbookClient {
-            market: accounts.market.clone(),
-            authority: accounts.authority.clone(),
-            pc_wallet: accounts.pc_wallet.clone(),
-            dex_program: accounts.dex_program.clone(),
-            token_program: accounts.token_program.clone(),
-            rent: accounts.rent.clone(),
+            market: self.market.clone(),
+            authority: self.authority.clone(),
+            pc_wallet: self.pc_wallet.clone(),
+            dex_program: self.dex_program.clone(),
+            token_program: self.token_program.clone(),
+            rent: self.rent.clone(),
+            program_id: *program_id,
         }
     }
 }
@@ -234,7 +273,7 @@ pub struct SwapTransitive<'info> {
 }
 
 impl<'info> SwapTransitive<'info> {
-    fn orderbook_from(&self) -> OrderbookClient<'info> {
+    fn orderbook_from(&self, program_id: &Pubkey) -> OrderbookClient<'info> {
         OrderbookClient {
             market: self.from.clone(),
             authority: self.authority.clone(),
@@ -242,9 +281,10 @@ impl<'info> SwapTransitive<'info> {
             dex_program: self.dex_program.clone(),
             token_program: self.token_program.clone(),
             rent: self.rent.clone(),
+            program_id: *program_id,
         }
     }
-    fn orderbook_to(&self) -> OrderbookClient<'info> {
+    fn orderbook_to(&self, program_id: &Pubkey) -> OrderbookClient<'info> {
         OrderbookClient {
             market: self.to.clone(),
             authority: self.authority.clone(),
@@ -252,6 +292,7 @@ impl<'info> SwapTransitive<'info> {
             dex_program: self.dex_program.clone(),
             token_program: self.token_program.clone(),
             rent: self.rent.clone(),
+            program_id: *program_id,
         }
     }
 }
@@ -264,6 +305,7 @@ struct OrderbookClient<'info> {
     dex_program: AccountInfo<'info>,
     token_program: AccountInfo<'info>,
     rent: AccountInfo<'info>,
+    program_id: Pubkey,
 }
 
 impl<'info> OrderbookClient<'info> {
@@ -344,7 +386,12 @@ impl<'info> OrderbookClient<'info> {
             token_program: self.token_program.clone(),
             rent: self.rent.clone(),
         };
-        let mut ctx = CpiContext::new(self.dex_program.clone(), dex_accs);
+
+        // Program signer.
+        let seeds: &[&[u8]] = &[&SIGNER_SEEDS, &[self.nonce()]];
+        let signer: &[&[&[u8]]] = &[seeds][..];
+
+        let mut ctx = CpiContext::new_with_signer(self.dex_program.clone(), dex_accs, signer);
         if let Some(referral) = referral {
             ctx = ctx.with_remaining_accounts(vec![referral]);
         }
@@ -373,11 +420,21 @@ impl<'info> OrderbookClient<'info> {
             vault_signer: self.market.vault_signer.clone(),
             token_program: self.token_program.clone(),
         };
-        let mut ctx = CpiContext::new(self.dex_program.clone(), settle_accs);
+
+        // Program signer.
+        let seeds: &[&[u8]] = &[&SIGNER_SEEDS, &[self.nonce()]];
+        let signer: &[&[&[u8]]] = &[seeds][..];
+
+        let mut ctx = CpiContext::new_with_signer(self.dex_program.clone(), settle_accs, signer);
         if let Some(referral) = referral {
             ctx = ctx.with_remaining_accounts(vec![referral]);
         }
         dex::settle_funds(ctx)
+    }
+
+    fn nonce(&self) -> u8 {
+        let (_, nonce) = Pubkey::find_program_address(&[&SIGNER_SEEDS], &self.program_id);
+        nonce
     }
 }
 
@@ -490,4 +547,6 @@ pub enum ErrorCode {
     SwapTokensCannotMatch,
     #[msg("Slippage tolerance exceeded")]
     SlippageExceeded,
+    #[msg("Invalid program derived address")]
+    InvalidPda,
 }
