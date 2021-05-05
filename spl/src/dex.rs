@@ -162,5 +162,4 @@ pub struct CloseOpenOrders<'info> {
     pub authority: AccountInfo<'info>,
     pub destination: AccountInfo<'info>,
     pub market: AccountInfo<'info>,
-    pub rent: AccountInfo<'info>,
 }
