@@ -1,0 +1,838 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Program | @project-serum/anchor</title>
+	<meta name="description" content="Documentation for @project-serum/anchor">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+	<script async src="../assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.json" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">@project-serum/anchor</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../modules.html">@project-serum/anchor</a>
+				</li>
+				<li>
+					<a href="program.html">Program</a>
+				</li>
+			</ul>
+			<h1>Class Program</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p><code>Program</code> provides the IDL deserialized client representation of an Anchor
+						program.</p>
+					</div>
+					<p>This API is the one stop shop for all things related to communicating with
+						on-chain programs. Among other things, one can send transactions, fetch
+						deserialized accounts, decode instruction data, subscribe to account
+					changes, and listen to events.</p>
+					<p>In addition to field accessors and methods, the object provides a set of
+						dynamically generated properties (internally referred to as namespaces) that
+					map one-to-one to program methods.</p>
+					<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+						<h2>Example</h2>
+					</a>
+					<p>To illustrate dynamic namespace generation, consider the following Anchor
+						program writen in Rust. The documentation below will refer to this program in
+					its examples.</p>
+					<pre><code class="language-rust"><span style="color: #000000">#[program]</span>
+<span style="color: #0000FF">mod</span><span style="color: #000000"> counter {</span>
+
+<span style="color: #000000">    #[state]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">GlobalCounter</span><span style="color: #000000"> {</span>
+<span style="color: #000000">      </span><span style="color: #001080">count</span><span style="color: #000000">: </span><span style="color: #267F99">u32</span><span style="color: #000000">,</span>
+<span style="color: #000000">    }</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">impl</span><span style="color: #000000"> </span><span style="color: #267F99">GlobalCounter</span><span style="color: #000000"> {</span>
+<span style="color: #000000">        </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">new</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">New</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">Self</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">            </span><span style="color: #0000FF">Self</span><span style="color: #000000"> {</span>
+<span style="color: #000000">                </span><span style="color: #001080">count</span><span style="color: #000000">: </span><span style="color: #098658">0</span><span style="color: #000000">,</span>
+<span style="color: #000000">            }</span>
+<span style="color: #000000">        }</span>
+
+<span style="color: #000000">        </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">global_increment</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">GlobalIncrement</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">            </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.counter += </span><span style="color: #098658">1</span><span style="color: #000000">;</span>
+<span style="color: #000000">            </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">        }</span>
+<span style="color: #000000">    }</span>
+
+<span style="color: #000000">   </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">create_counter</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">CreateCounter</span><span style="color: #000000">&gt;, </span><span style="color: #001080">start</span><span style="color: #000000">: </span><span style="color: #267F99">u32</span><span style="color: #000000">) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">       </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.counter.count = </span><span style="color: #001080">start</span><span style="color: #000000">;</span>
+<span style="color: #000000">       </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">   }</span>
+
+<span style="color: #000000">   </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">increment</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Increment</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">       </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.counter.count += </span><span style="color: #098658">1</span><span style="color: #000000">;</span>
+<span style="color: #000000">       </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">   }</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">New</span><span style="color: #000000"> {}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">GlobalIncrement</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">counter</span><span style="color: #000000">: </span><span style="color: #267F99">ProgramState</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">GlobalCounter</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">CreateCounter</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    #[account(init)]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000">: </span><span style="color: #267F99">ProgramAccount</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">Counter</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">rent</span><span style="color: #000000">: </span><span style="color: #267F99">Sysvar</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">Rent</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Increment</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    #[account(</span><span style="color: #0000FF">mut</span><span style="color: #000000">)]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000">: </span><span style="color: #267F99">ProgramAccount</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">,  </span><span style="color: #267F99">Counter</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[account]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Counter</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">count</span><span style="color: #000000">: </span><span style="color: #267F99">u64</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[event]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">WillCount</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">current_count</span><span style="color: #000000">: </span><span style="color: #267F99">u64</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<span class="target">Program</span>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class"><a href="program.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#account" class="tsd-kind-icon">account</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#instruction" class="tsd-kind-icon">instruction</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#rpc" class="tsd-kind-icon">rpc</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#simulate" class="tsd-kind-icon">simulate</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#state" class="tsd-kind-icon">state</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class"><a href="program.html#transaction" class="tsd-kind-icon">transaction</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Accessors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="program.html#coder" class="tsd-kind-icon">coder</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="program.html#idl" class="tsd-kind-icon">idl</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="program.html#programid" class="tsd-kind-icon">program<wbr>Id</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="program.html#provider" class="tsd-kind-icon">provider</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section ">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="program.html#addeventlistener" class="tsd-kind-icon">add<wbr>Event<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="program.html#removeeventlistener" class="tsd-kind-icon">remove<wbr>Event<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="program.html#at" class="tsd-kind-icon">at</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><a href="program.html#fetchidl" class="tsd-kind-icon">fetch<wbr>Idl</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Program<span class="tsd-signature-symbol">(</span>idl<span class="tsd-signature-symbol">: </span><a href="../modules.html#idl" class="tsd-signature-type" data-tsd-kind="Type alias">Idl</a>, programId<span class="tsd-signature-symbol">: </span><a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a>, provider<span class="tsd-signature-symbol">?: </span><a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="program.html" class="tsd-signature-type" data-tsd-kind="Class">Program</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L287">src/program/index.ts:287</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>idl: <a href="../modules.html#idl" class="tsd-signature-type" data-tsd-kind="Type alias">Idl</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The interface definition.</p>
+									</div>
+								</li>
+								<li>
+									<h5>programId: <a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The on-chain address of the program.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> provider: <a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network and wallet context to use. If not provided
+										then uses <a href="../modules.html#getprovider">getProvider</a>.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="program.html" class="tsd-signature-type" data-tsd-kind="Class">Program</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="account" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> account</h3>
+					<div class="tsd-signature tsd-kind-icon">account<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">AccountNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L155">src/program/index.ts:155</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Async functions to fetch deserialized program accounts from a cluster.</p>
+						</div>
+						<a href="#account" id="account" style="color: inherit; text-decoration: none;">
+							<h2>account</h2>
+						</a>
+						<pre><code class="language-javascript"><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">account</span><span style="color: #000000">.&lt;</span><span style="color: #001080">account</span><span style="color: #000000">&gt;(</span><span style="color: #001080">publicKey</span><span style="color: #000000">);</span>
+</code></pre>
+						<a href="#parameters" id="parameters" style="color: inherit; text-decoration: none;">
+							<h2>Parameters</h2>
+						</a>
+						<ol>
+							<li><code>publicKey</code> - The <a href="web3.publickey.html">PublicKey</a> of the account.</li>
+						</ol>
+						<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+							<h2>Example</h2>
+						</a>
+						<p>To fetch a <code>Counter</code> object from the above example,</p>
+						<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">counter</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">account</span><span style="color: #000000">.</span><span style="color: #795E26">counter</span><span style="color: #000000">(</span><span style="color: #001080">publicKey</span><span style="color: #000000">);</span>
+</code></pre>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="instruction" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> instruction</h3>
+					<div class="tsd-signature tsd-kind-icon">instruction<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">InstructionNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L185">src/program/index.ts:185</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Functions to build <a href="web3.transactioninstruction.html">TransactionInstruction</a> objects for program methods.</p>
+						</div>
+						<a href="#instruction" id="instruction" style="color: inherit; text-decoration: none;">
+							<h2>instruction</h2>
+						</a>
+						<pre><code class="language-javascript"><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">instruction</span><span style="color: #000000">.&lt;</span><span style="color: #001080">method</span><span style="color: #000000">&gt;(...</span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">ctx</span><span style="color: #000000">);</span>
+</code></pre>
+						<a href="#parameters" id="parameters" style="color: inherit; text-decoration: none;">
+							<h2>Parameters</h2>
+						</a>
+						<ol>
+							<li><code>args</code> - The positional arguments for the program. The type and number
+							of these arguments depend on the program being used.</li>
+							<li><code>ctx</code>  - <a href="../modules.html#context">Context</a> non-argument parameters to pass to the method.
+							Always the last parameter in the method call.</li>
+						</ol>
+						<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+							<h2>Example</h2>
+						</a>
+						<p>To create an instruction for the <code>increment</code> method above,</p>
+						<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">tx</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">instruction</span><span style="color: #000000">.</span><span style="color: #795E26">increment</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">accounts:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">counter</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">});</span>
+</code></pre>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="rpc" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> rpc</h3>
+					<div class="tsd-signature tsd-kind-icon">rpc<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">RpcNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L132">src/program/index.ts:132</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Async methods to send signed transactions invoking <em>non</em>-state methods
+							on an Anchor program.</p>
+						</div>
+						<a href="#rpc" id="rpc" style="color: inherit; text-decoration: none;">
+							<h2>rpc</h2>
+						</a>
+						<pre><code class="language-javascript"><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">rpc</span><span style="color: #000000">.&lt;</span><span style="color: #001080">method</span><span style="color: #000000">&gt;(...</span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">ctx</span><span style="color: #000000">);</span>
+</code></pre>
+						<a href="#parameters" id="parameters" style="color: inherit; text-decoration: none;">
+							<h2>Parameters</h2>
+						</a>
+						<ol>
+							<li><code>args</code> - The positional arguments for the program. The type and number
+							of these arguments depend on the program being used.</li>
+							<li><code>ctx</code>  - <a href="../modules.html#context">Context</a> non-argument parameters to pass to the method.
+							Always the last parameter in the method call.</li>
+						</ol>
+						<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+							<h2>Example</h2>
+						</a>
+						<p>To send a transaction invoking the <code>increment</code> method above,</p>
+						<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">txSignature</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">rpc</span><span style="color: #000000">.</span><span style="color: #795E26">increment</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">accounts:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">counter</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">});</span>
+</code></pre>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="simulate" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> simulate</h3>
+					<div class="tsd-signature tsd-kind-icon">simulate<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">SimulateNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L250">src/program/index.ts:250</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Async functions to simulate instructions against an Anchor program,
+							returning a list of deserialized events <em>and</em> raw program logs.</p>
+						</div>
+						<p>One can use this to read data calculated from a program on chain, by
+							emitting an event in the program and reading the emitted event client side
+						via the <code>simulate</code> namespace.</p>
+						<a href="#simulate" id="simulate" style="color: inherit; text-decoration: none;">
+							<h2>simulate</h2>
+						</a>
+						<pre><code class="language-javascript"><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">simulate</span><span style="color: #000000">.&lt;</span><span style="color: #001080">method</span><span style="color: #000000">&gt;(...</span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">ctx</span><span style="color: #000000">);</span>
+</code></pre>
+						<a href="#parameters" id="parameters" style="color: inherit; text-decoration: none;">
+							<h2>Parameters</h2>
+						</a>
+						<ol>
+							<li><code>args</code> - The positional arguments for the program. The type and number
+							of these arguments depend on the program being used.</li>
+							<li><code>ctx</code>  - <a href="../modules.html#context">Context</a> non-argument parameters to pass to the method.
+							Always the last parameter in the method call.</li>
+						</ol>
+						<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+							<h2>Example</h2>
+						</a>
+						<p>To simulate the <code>increment</code> method above,</p>
+						<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">tx</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">simulate</span><span style="color: #000000">.</span><span style="color: #795E26">increment</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">accounts:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">counter</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">});</span>
+</code></pre>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="state" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> state</h3>
+					<div class="tsd-signature tsd-kind-icon">state<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">StateNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L255">src/program/index.ts:255</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Object with state account accessors and rpcs.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+					<a name="transaction" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> transaction</h3>
+					<div class="tsd-signature tsd-kind-icon">transaction<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">TransactionNamespace</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L215">src/program/index.ts:215</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Functions to build <a href="web3.transaction.html">Transaction</a> objects.</p>
+						</div>
+						<a href="#transaction" id="transaction" style="color: inherit; text-decoration: none;">
+							<h2>transaction</h2>
+						</a>
+						<pre><code class="language-javascript"><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">transaction</span><span style="color: #000000">.&lt;</span><span style="color: #001080">method</span><span style="color: #000000">&gt;(...</span><span style="color: #001080">args</span><span style="color: #000000">, </span><span style="color: #001080">ctx</span><span style="color: #000000">);</span>
+</code></pre>
+						<a href="#parameters" id="parameters" style="color: inherit; text-decoration: none;">
+							<h2>Parameters</h2>
+						</a>
+						<ol>
+							<li><code>args</code> - The positional arguments for the program. The type and number
+							of these arguments depend on the program being used.</li>
+							<li><code>ctx</code>  - <a href="../modules.html#context">Context</a> non-argument parameters to pass to the method.
+							Always the last parameter in the method call.</li>
+						</ol>
+						<a href="#example" id="example" style="color: inherit; text-decoration: none;">
+							<h2>Example</h2>
+						</a>
+						<p>To create an instruction for the <code>increment</code> method above,</p>
+						<pre><code class="language-javascript"><span style="color: #0000FF">const</span><span style="color: #000000"> </span><span style="color: #0070C1">tx</span><span style="color: #000000"> = </span><span style="color: #AF00DB">await</span><span style="color: #000000"> </span><span style="color: #001080">program</span><span style="color: #000000">.</span><span style="color: #001080">transaction</span><span style="color: #000000">.</span><span style="color: #795E26">increment</span><span style="color: #000000">({</span>
+<span style="color: #000000">  </span><span style="color: #001080">accounts:</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #001080">counter</span><span style="color: #000000">,</span>
+<span style="color: #000000">  },</span>
+<span style="color: #000000">});</span>
+</code></pre>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Accessors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="coder" class="tsd-anchor"></a>
+					<h3>coder</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> coder<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="coder.html" class="tsd-signature-type" data-tsd-kind="Class">Coder</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L276">src/program/index.ts:276</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Coder for serializing requests.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="coder.html" class="tsd-signature-type" data-tsd-kind="Class">Coder</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="idl" class="tsd-anchor"></a>
+					<h3>idl</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> idl<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules.html#idl" class="tsd-signature-type" data-tsd-kind="Type alias">Idl</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L268">src/program/index.ts:268</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>IDL defining the program&#39;s interface.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules.html#idl" class="tsd-signature-type" data-tsd-kind="Type alias">Idl</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="programid" class="tsd-anchor"></a>
+					<h3>program<wbr>Id</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> programId<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L260">src/program/index.ts:260</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Address of the program.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="provider" class="tsd-anchor"></a>
+					<h3>provider</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> provider<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L284">src/program/index.ts:284</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Wallet and network provider.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="addeventlistener" class="tsd-anchor"></a>
+					<h3>add<wbr>Event<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">add<wbr>Event<wbr>Listener<span class="tsd-signature-symbol">(</span>eventName<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, callback<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, slot<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L359">src/program/index.ts:359</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Invokes the given callback everytime the given event is emitted.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>eventName: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The PascalCase name of the event, provided by the IDL.</p>
+									</div>
+								</li>
+								<li>
+									<h5>callback: <span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, slot<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The function to invoke whenever the event is emitted from
+										program logs.</p>
+									</div>
+									<ul class="tsd-parameters">
+										<li class="tsd-parameter-signature">
+											<ul class="tsd-signatures tsd-kind-type-literal">
+												<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span>, slot<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+											</ul>
+											<ul class="tsd-descriptions">
+												<li class="tsd-description">
+													<h4 class="tsd-parameters-title">Parameters</h4>
+													<ul class="tsd-parameters">
+														<li>
+															<h5>event: <span class="tsd-signature-type">any</span></h5>
+														</li>
+														<li>
+															<h5>slot: <span class="tsd-signature-type">number</span></h5>
+														</li>
+													</ul>
+													<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="removeeventlistener" class="tsd-anchor"></a>
+					<h3>remove<wbr>Event<wbr>Listener</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">remove<wbr>Event<wbr>Listener<span class="tsd-signature-symbol">(</span>listener<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L384">src/program/index.ts:384</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Unsubscribes from the given event listener.</p>
+								</div>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>listener: <span class="tsd-signature-type">number</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="at" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> at</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">at<span class="tsd-signature-symbol">(</span>programId<span class="tsd-signature-symbol">: </span><a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a>, provider<span class="tsd-signature-symbol">?: </span><a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="program.html" class="tsd-signature-type" data-tsd-kind="Class">Program</a><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L328">src/program/index.ts:328</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Generates a Program client by fetching the IDL from the network.</p>
+								</div>
+								<p>In order to use this method, an IDL must have been previously initialized
+								via the anchor CLI&#39;s <code>anchor idl init</code> command.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>programId: <a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The on-chain address of the program.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> provider: <a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network and wallet context.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="program.html" class="tsd-signature-type" data-tsd-kind="Class">Program</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-static">
+					<a name="fetchidl" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagStatic">Static</span> fetch<wbr>Idl</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-static">
+						<li class="tsd-signature tsd-kind-icon">fetch<wbr>Idl<span class="tsd-signature-symbol">(</span>programId<span class="tsd-signature-symbol">: </span><a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a>, provider<span class="tsd-signature-symbol">?: </span><a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/project-serum/anchor/blob/459b4f0/ts/src/program/index.ts#L342">src/program/index.ts:342</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Fetches an idl from the blockchain.</p>
+								</div>
+								<p>In order to use this method, an IDL must have been previously initialized
+								via the anchor CLI&#39;s <code>anchor idl init</code> command.</p>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>programId: <a href="web3.publickey.html" class="tsd-signature-type" data-tsd-kind="Class">PublicKey</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The on-chain address of the program.</p>
+									</div>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> provider: <a href="provider.html" class="tsd-signature-type" data-tsd-kind="Class">Provider</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The network and wallet context.</p>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="../modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="bn.html" class="tsd-kind-icon">BN</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="coder.html" class="tsd-kind-icon">Coder</a>
+					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class">
+						<a href="program.html" class="tsd-kind-icon">Program</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class">
+								<a href="program.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#account" class="tsd-kind-icon">account</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#instruction" class="tsd-kind-icon">instruction</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#rpc" class="tsd-kind-icon">rpc</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#simulate" class="tsd-kind-icon">simulate</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#state" class="tsd-kind-icon">state</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class">
+								<a href="program.html#transaction" class="tsd-kind-icon">transaction</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="program.html#coder" class="tsd-kind-icon">coder</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="program.html#idl" class="tsd-kind-icon">idl</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="program.html#programid" class="tsd-kind-icon">program<wbr>Id</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="program.html#provider" class="tsd-kind-icon">provider</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="program.html#addeventlistener" class="tsd-kind-icon">add<wbr>Event<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="program.html#removeeventlistener" class="tsd-kind-icon">remove<wbr>Event<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="program.html#at" class="tsd-kind-icon">at</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-static">
+								<a href="program.html#fetchidl" class="tsd-kind-icon">fetch<wbr>Idl</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-class">
+						<a href="provider.html" class="tsd-kind-icon">Provider</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="wallet.html" class="tsd-kind-icon">Wallet</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="../modules.html#accounts" class="tsd-kind-icon">Accounts</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="../modules.html#context" class="tsd-kind-icon">Context</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="../modules.html#idl" class="tsd-kind-icon">Idl</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../modules.html#utils" class="tsd-kind-icon">utils</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="../modules.html#workspace" class="tsd-kind-icon">workspace</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#getprovider" class="tsd-kind-icon">get<wbr>Provider</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#setprovider" class="tsd-kind-icon">set<wbr>Provider</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
