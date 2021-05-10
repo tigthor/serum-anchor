@@ -1,0 +1,341 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@project-serum/anchor</title>
+	<meta name="description" content="Documentation for @project-serum/anchor">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@project-serum/anchor</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>@project-serum/anchor</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#anchor-⚓" id="anchor-⚓" style="color: inherit; text-decoration: none;">
+					<h1>Anchor ⚓</h1>
+				</a>
+				<p><a href="https://travis-ci.com/project-serum/anchor"><img src="https://travis-ci.com/project-serum/anchor.svg?branch=master" alt="Build Status"></a>
+					<a href="https://project-serum.github.io/anchor/"><img src="https://img.shields.io/badge/docs-tutorials-orange" alt="Docs"></a>
+					<a href="https://discord.com/channels/739225212658122886"><img src="https://img.shields.io/discord/739225212658122886?color=blueviolet" alt="Chat"></a>
+				<a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/github/license/project-serum/anchor?color=ff69b4" alt="License"></a></p>
+				<p>Anchor is a framework for Solana&#39;s <a href="https://medium.com/solana-labs/sealevel-parallel-processing-thousands-of-smart-contracts-d814b378192">Sealevel</a> runtime providing several convenient developer tools.</p>
+				<ul>
+					<li>Rust eDSL for writing Solana programs</li>
+					<li><a href="https://en.wikipedia.org/wiki/Interface_description_language">IDL</a> specification</li>
+					<li>TypeScript package for generating clients from IDL</li>
+					<li>CLI and workspace management for developing complete applications</li>
+				</ul>
+				<p>If you&#39;re familiar with developing in Ethereum&#39;s <a href="https://docs.soliditylang.org/en/v0.7.4/">Solidity</a>, <a href="https://www.trufflesuite.com/">Truffle</a>, <a href="https://github.com/ethereum/web3.js">web3.js</a> or Parity&#39;s <a href="https://github.com/paritytech/ink">Ink!</a>, then the experience will be familiar. Although the DSL syntax and semantics are targeted at Solana, the high level flow of writing RPC request handlers, emitting an IDL, and generating clients from IDL is the same.</p>
+				<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
+					<h2>Getting Started</h2>
+				</a>
+				<p>For a quickstart guide and in depth tutorials, see the guided <a href="https://project-serum.github.io/anchor/getting-started/introduction.html">documentation</a>.
+				To jump straight to examples, go <a href="https://github.com/project-serum/anchor/tree/master/examples">here</a>. For the latest Rust API documentation, see <a href="https://docs.rs/anchor-lang">docs.rs</a>.</p>
+				<a href="#packages" id="packages" style="color: inherit; text-decoration: none;">
+					<h2>Packages</h2>
+				</a>
+				<table>
+					<thead>
+						<tr>
+							<th align="left">Package</th>
+							<th align="left">Description</th>
+							<th align="left">Version</th>
+							<th align="left">Docs</th>
+						</tr>
+					</thead>
+					<tbody><tr>
+							<td align="left"><code>anchor-lang</code></td>
+							<td align="left">Rust primitives for writing programs on Solana</td>
+							<td align="left"><a href="https://crates.io/crates/anchor-lang"><img src="https://img.shields.io/crates/v/anchor-lang?color=blue" alt="Crates.io"></a></td>
+							<td align="left"><a href="https://docs.rs/anchor-lang"><img src="https://docs.rs/anchor-lang/badge.svg" alt="Docs.rs"></a></td>
+						</tr>
+						<tr>
+							<td align="left"><code>anchor-spl</code></td>
+							<td align="left">CPI clients for SPL programs on Solana</td>
+							<td align="left"><img src="https://img.shields.io/crates/v/anchor-spl?color=blue" alt="crates"></td>
+							<td align="left"><a href="https://docs.rs/anchor-spl"><img src="https://docs.rs/anchor-spl/badge.svg" alt="Docs.rs"></a></td>
+						</tr>
+						<tr>
+							<td align="left"><code>anchor-client</code></td>
+							<td align="left">Rust client for Anchor programs</td>
+							<td align="left"><img src="https://img.shields.io/crates/v/anchor-client?color=blue" alt="crates"></td>
+							<td align="left"><a href="https://docs.rs/anchor-client"><img src="https://docs.rs/anchor-client/badge.svg" alt="Docs.rs"></a></td>
+						</tr>
+						<tr>
+							<td align="left"><code>@project-serum/anchor</code></td>
+							<td align="left">TypeScript client for Anchor programs</td>
+							<td align="left"><a href="https://www.npmjs.com/package/@project-serum/anchor"><img src="https://img.shields.io/npm/v/@project-serum/anchor.svg?color=blue" alt="npm"></a></td>
+							<td align="left"><a href="https://project-serum.github.io/anchor/ts"><img src="https://img.shields.io/badge/docs-typedoc-blue" alt="Docs"></a></td>
+						</tr>
+				</tbody></table>
+				<a href="#note" id="note" style="color: inherit; text-decoration: none;">
+					<h2>Note</h2>
+				</a>
+				<ul>
+					<li><strong>Anchor is in active development, so all APIs are subject to change.</strong></li>
+					<li><strong>This code is unaudited. Use at your own risk.</strong></li>
+				</ul>
+				<a href="#examples" id="examples" style="color: inherit; text-decoration: none;">
+					<h2>Examples</h2>
+				</a>
+				<p>Build stateful programs on Solana by defining a state struct with associated
+					methods. Here&#39;s a classic counter example, where only the designated <code>authority</code>
+				can increment the count.</p>
+				<pre><code class="language-rust"><span style="color: #000000">#[program]</span>
+<span style="color: #0000FF">mod</span><span style="color: #000000"> counter {</span>
+
+<span style="color: #000000">    #[state]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Counter</span><span style="color: #000000"> {</span>
+<span style="color: #000000">      </span><span style="color: #001080">authority</span><span style="color: #000000">: </span><span style="color: #267F99">Pubkey</span><span style="color: #000000">,</span>
+<span style="color: #000000">      </span><span style="color: #001080">count</span><span style="color: #000000">: </span><span style="color: #267F99">u64</span><span style="color: #000000">,</span>
+<span style="color: #000000">    }</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">new</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Auth</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;</span><span style="color: #0000FF">Self</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">        </span><span style="color: #267F99">Ok</span><span style="color: #000000">(</span><span style="color: #0000FF">Self</span><span style="color: #000000"> {</span>
+<span style="color: #000000">            </span><span style="color: #001080">auth</span><span style="color: #000000">: *</span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.authority.key</span>
+<span style="color: #000000">        })</span>
+<span style="color: #000000">    }</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">increment</span><span style="color: #000000">(&amp;</span><span style="color: #0000FF">mut</span><span style="color: #000000"> </span><span style="color: #0000FF">self</span><span style="color: #000000">, </span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Auth</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">        </span><span style="color: #AF00DB">if</span><span style="color: #000000"> &amp;</span><span style="color: #0000FF">self</span><span style="color: #000000">.authority != </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.authority.key {</span>
+<span style="color: #000000">            </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #267F99">Err</span><span style="color: #000000">(</span><span style="color: #267F99">ErrorCode</span><span style="color: #000000">::</span><span style="color: #267F99">Unauthorized</span><span style="color: #000000">.</span><span style="color: #795E26">into</span><span style="color: #000000">());</span>
+<span style="color: #000000">        }</span>
+
+<span style="color: #000000">        </span><span style="color: #0000FF">self</span><span style="color: #000000">.count += </span><span style="color: #098658">1</span><span style="color: #000000">;</span>
+
+<span style="color: #000000">        </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Auth</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    #[account(signer)]</span>
+<span style="color: #000000">    </span><span style="color: #001080">authority</span><span style="color: #000000">: </span><span style="color: #267F99">AccountInfo</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[error]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99">ErrorCode</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    #[msg(</span><span style="color: #A31515">&quot;You are not authorized to perform this action.&quot;</span><span style="color: #000000">)]</span>
+<span style="color: #000000">    </span><span style="color: #267F99">Unauthorized</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Additionally, one can utilize the full power of Solana&#39;s parallel execution model by
+					keeping the program stateless and working with accounts directly. The above example
+				can be rewritten as follows.</p>
+				<pre><code class="language-rust"><span style="color: #0000FF">use</span><span style="color: #000000"> </span><span style="color: #267F99">anchor</span><span style="color: #000000">::</span><span style="color: #267F99">prelude</span><span style="color: #000000">::*;</span>
+
+<span style="color: #000000">#[program]</span>
+<span style="color: #0000FF">mod</span><span style="color: #000000"> counter {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">use</span><span style="color: #000000"> </span><span style="color: #0000FF">super</span><span style="color: #000000">::*;</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">initialize</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Initialize</span><span style="color: #000000">&gt;, </span><span style="color: #001080">authority</span><span style="color: #000000">: </span><span style="color: #267F99">Pubkey</span><span style="color: #000000">) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">        </span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000"> = &amp;</span><span style="color: #0000FF">mut</span><span style="color: #000000"> </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.counter;</span>
+
+<span style="color: #000000">        </span><span style="color: #001080">counter</span><span style="color: #000000">.authority = </span><span style="color: #001080">authority</span><span style="color: #000000">;</span>
+<span style="color: #000000">        </span><span style="color: #001080">counter</span><span style="color: #000000">.count = </span><span style="color: #098658">0</span><span style="color: #000000">;</span>
+
+<span style="color: #000000">        </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">    }</span>
+
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">fn</span><span style="color: #000000"> </span><span style="color: #795E26">increment</span><span style="color: #000000">(</span><span style="color: #001080">ctx</span><span style="color: #000000">: </span><span style="color: #267F99">Context</span><span style="color: #000000">&lt;</span><span style="color: #267F99">Increment</span><span style="color: #000000">&gt;) -&gt; </span><span style="color: #267F99">Result</span><span style="color: #000000">&lt;()&gt; {</span>
+<span style="color: #000000">        </span><span style="color: #0000FF">let</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000"> = &amp;</span><span style="color: #0000FF">mut</span><span style="color: #000000"> </span><span style="color: #001080">ctx</span><span style="color: #000000">.accounts.counter;</span>
+
+<span style="color: #000000">        </span><span style="color: #001080">counter</span><span style="color: #000000"> += </span><span style="color: #098658">1</span><span style="color: #000000">;</span>
+
+<span style="color: #000000">        </span><span style="color: #267F99">Ok</span><span style="color: #000000">(())</span>
+<span style="color: #000000">    }</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Initialize</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    #[account(init)]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000">: </span><span style="color: #267F99">ProgramAccount</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">Counter</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">rent</span><span style="color: #000000">: </span><span style="color: #267F99">Sysvar</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">Rent</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[derive(</span><span style="color: #267F99">Accounts</span><span style="color: #000000">)]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Increment</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt; {</span>
+<span style="color: #000000">    #[account(</span><span style="color: #0000FF">mut</span><span style="color: #000000">, has_one = authority)]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">counter</span><span style="color: #000000">: </span><span style="color: #267F99">ProgramAccount</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">, </span><span style="color: #267F99">Counter</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">    #[account(signer)]</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">authority</span><span style="color: #000000">: </span><span style="color: #267F99">AccountInfo</span><span style="color: #000000">&lt;&#039;</span><span style="color: #267F99">info</span><span style="color: #000000">&gt;,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[account]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">struct</span><span style="color: #000000"> </span><span style="color: #267F99">Counter</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">authority</span><span style="color: #000000">: </span><span style="color: #267F99">Pubkey</span><span style="color: #000000">,</span>
+<span style="color: #000000">    </span><span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #001080">count</span><span style="color: #000000">: </span><span style="color: #267F99">u64</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+
+<span style="color: #000000">#[error]</span>
+<span style="color: #0000FF">pub</span><span style="color: #000000"> </span><span style="color: #0000FF">enum</span><span style="color: #000000"> </span><span style="color: #267F99">ErrorCode</span><span style="color: #000000"> {</span>
+<span style="color: #000000">    #[msg(</span><span style="color: #A31515">&quot;You are not authorized to perform this action.&quot;</span><span style="color: #000000">)]</span>
+<span style="color: #000000">    </span><span style="color: #267F99">Unauthorized</span><span style="color: #000000">,</span>
+<span style="color: #000000">}</span>
+</code></pre>
+				<p>Due to the fact that account sizes on Solana are fixed, some combination of
+					the above is often required. For example, one can store store global state
+					associated with the entire program in the <code>#[state]</code> struct and local
+				state assocated with each user in individual <code>#[account]</code> structs.</p>
+				<p>For more, see the <a href="https://github.com/project-serum/anchor/tree/master/examples">examples</a>
+				directory.</p>
+				<a href="#contribution" id="contribution" style="color: inherit; text-decoration: none;">
+					<h2>Contribution</h2>
+				</a>
+				<p>Thank you for your interest in contributing to Anchor! All contributions are welcome no
+					matter how big or small. This includes includes (but is not limited to) filing issues,
+				adding documentation, fixing bugs, creating examples, and implementing features.</p>
+				<p>If you&#39;d like to contribute, please claim an issue by commenting, forking, and
+					opening a pull request, even if empty. This allows the maintainers to track who
+					is working on what issue as to not overlap work. If you&#39;re looking to get started,
+					check out <a href="https://github.com/project-serum/anchor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22">good first issues</a>
+					or issues where <a href="https://github.com/project-serum/anchor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22">help is wanted</a>.
+				For simple documentation changes, feel free to just open a pull request.</p>
+				<p>If you&#39;re considering larger changes or self motivated features, please file an issue
+				and engage with the maintainers in <a href="https://discord.com/channels/739225212658122886">Discord</a>.</p>
+				<p>When contributing, please make sure your code adheres to some basic coding guidlines:</p>
+				<ul>
+					<li>Code must be formatted with the configured formatters (e.g. rustfmt and prettier).</li>
+					<li>Comment lines should be no longer than 80 characters and written with proper grammar and punctuation.</li>
+					<li>Commit messages should be prefixed with the package(s) they modify. Changes affecting multiple
+					packages should list all packages. In rare cases, changes may omit the package name prefix.</li>
+					<li>All notable changes should be documented in the <a href="https://github.com/project-serum/anchor/blob/master/CHANGELOG.md">Change Log</a>.</li>
+				</ul>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p>Anchor is licensed under <a href="./LICENSE">Apache 2.0</a>.</p>
+				<p>Unless you explicitly state otherwise, any contribution intentionally submitted
+					for inclusion in Anchor by you, as defined in the Apache-2.0 license, shall be
+				licensed as above, without any additional terms or conditions.</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class="label tsd-is-external">
+						<span>Externals</span>
+					</li>
+					<li class=" tsd-kind-namespace tsd-is-external">
+						<a href="modules/bn.html">BN</a>
+					</li>
+					<li class=" tsd-kind-namespace tsd-is-external">
+						<a href="modules/web3.html">web3</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-is-external">
+						<a href="classes/bn.html" class="tsd-kind-icon">BN</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/coder.html" class="tsd-kind-icon">Coder</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/program.html" class="tsd-kind-icon">Program</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/provider.html" class="tsd-kind-icon">Provider</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/wallet.html" class="tsd-kind-icon">Wallet</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#accounts" class="tsd-kind-icon">Accounts</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#context" class="tsd-kind-icon">Context</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#idl" class="tsd-kind-icon">Idl</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="modules.html#utils" class="tsd-kind-icon">utils</a>
+					</li>
+					<li class=" tsd-kind-variable">
+						<a href="modules.html#workspace" class="tsd-kind-icon">workspace</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#getprovider" class="tsd-kind-icon">get<wbr>Provider</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#setprovider" class="tsd-kind-icon">set<wbr>Provider</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
